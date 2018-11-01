@@ -157,6 +157,8 @@ def nfa2dfa(alphabet, s0, F, move):
             for s in states[head]:
                 if c in move[s].keys():
                     U |= move[s][c]
+            if len(U) == 0:
+                continue
             U = eps_closure_T(U, move)
             # add into dtran table
             if U not in states:
@@ -172,23 +174,91 @@ def nfa2dfa(alphabet, s0, F, move):
             final_state[states.index(s)] = F[list(intersection)[0]]
     return 0, final_state, dtran
 
+def min_dfa(s0, F, move):
+    # partition
+    part = [list(range(0, len(move)) - F.keys()), list(F.keys())]
+    weak_move = [{} for i in range(0, len(move))]
+    while True:
+        # calculate the weak_move table
+        for i in range(0, len(move)):
+            for k, v in move[i].items():
+                weak_move[i][k] = [j for j in range(0, len(part)) if v in part[j]][0]
+        # make new partition
+        new_part = []
+        for group in part:
+            g_part = []
+            for state in group:
+                find = False
+                for gg in g_part:
+                    if weak_move[gg[0]] == weak_move[state]:
+                        find = True
+                        gg.append(state)
+                        break
+                if not find:
+                    g_part.append([state])
+            new_part += g_part
+        # judge if new partition is the same as former partition
+        if new_part == part:
+            break
+        else:
+            part = new_part
+    # construct the min dfa
+    new_s0 = [i for i in range(0, len(part)) if s0 in part[i]][0]
+    new_F = {}
+    for (k, v) in F.items():
+        new_F[[i for i in range(0, len(part)) if k in part[i]][0]] = v
+    new_move = [weak_move[group[0]] for group in part]
+    return new_s0, new_F, new_move
+
+'''
+This simulator is DEPRECATED now. See the `README.md` file in the 
+same directory for more infomation.
+'''
 def dfa_simulate(s0, F, move, txt):
     s = s0
     for c in txt:
         if c not in move[s].keys():
-            return None
+            return (None, txt)
         s = move[s][c]
     if s in F.keys():
         return (F[s], txt)
     else:
         return (None, txt)
 
+def dfa2cc(s0, F, move, filename):
+    # prepare str to output
+    outstr = '\ts0 = %s;\n' % s0
+    for k,v in F.items():
+        outstr += '\tF[%s] = "%s";\n' % (k, v)
+    i = 0
+    for m in move:
+        var = 'm' + str(i)
+        outstr += '\tmap<char,int> %s;\n' % var
+        for k,v in m.items():
+            outstr += "\t%s['%s'] = %s;\n" % (var, k, v)
+        outstr += '\tmove.push_back(%s);\n' % var
+        i += 1
+    # generate cc file
+    flag = '// *insert point for python*'
+    with open('lat.cc', 'r', encoding='utf-8') as lat, \
+            open(filename, 'w', encoding='utf-8') as fout:
+        fout.write('// This file is generated from `lex.py` using template `lat.cc`. \n// DO NOT MODIFY.\n')
+        for line in list(lat):
+            fout.write(line)
+            if flag in line:
+                fout.write(outstr)
+    pass
+
 if __name__ == '__main__':
     alphabet, rule = get_input('rules.txt')
     nfa_s0, nfa_F, nfa_move = rule2nfa(alphabet, rule)
     dfa_s0, dfa_F, dfa_move = nfa2dfa(alphabet, nfa_s0, nfa_F, nfa_move)
+    dfa_s0, dfa_F, dfa_move = min_dfa(dfa_s0, dfa_F, dfa_move)
+    dfa2cc(dfa_s0, dfa_F, dfa_move, 'lexical_analyser.cc')
+'''
     f = open('input.txt', 'r', encoding='utf-8')
     for w in f.read().split():
         result = dfa_simulate(dfa_s0, dfa_F, dfa_move, w)
         print(result)
+'''
 
