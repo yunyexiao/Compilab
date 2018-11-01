@@ -12,14 +12,18 @@ Define your own alphabet and categories of words as you like.
 
 ## Step 2. Generating the lexical analyser
 Run `lex.py` with python3, and it would generate a file named 
-`lexical_analyser.cc`. After that, type command `make` at the current 
-directory. An executable named `lexical_analyser` would be generated.
+`lexical_analyser.cc`. After that, for Linux, type command `make` at 
+the current directory. An executable named `lexical_analyser` would be 
+generated. For Windows, type 
+`g++ lexical_analyser.cc -o lexical_analyser --std=c++11` to generate 
+the executable.
 
 ## Step 3. About the `input.txt` file
 This file contains all the input strings for the generated lexical analyser.
 You can change the file name as you like.
 
 ## Step 4. Run lexical analyser
-Just type command `./lexical_analyser [input_file]`where `[input_file]` is 
-the file name of input you set at Step 3, and tokens would be output.
+Just type command `./lexical_analyser [input_file]`(leave out `./` if on Windows) 
+where `[input_file]` is the file name of input you set at Step 3, and tokens 
+would be output.
 
