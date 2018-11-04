@@ -176,7 +176,16 @@ def nfa2dfa(alphabet, s0, F, move):
 
 def min_dfa(s0, F, move):
     # partition
-    part = [list(range(0, len(move)) - F.keys()), list(F.keys())]
+    part = [list(range(0, len(move)) - F.keys())]
+    for state,cate in F.items():
+        find = False
+        for i in range(1, len(part)):
+            if F[part[i][0]] == cate:
+                find = True
+                part[i].append(state)
+                break
+        if not find:
+            part.append([state])
     weak_move = [{} for i in range(0, len(move))]
     while True:
         # calculate the weak_move table
@@ -186,9 +195,11 @@ def min_dfa(s0, F, move):
         # make new partition
         new_part = []
         for group in part:
+            # partition each group of the upper partition
             g_part = []
             for state in group:
-                find = False
+                # find the weak-equvalence group for a state
+                find = False 
                 for gg in g_part:
                     if weak_move[gg[0]] == weak_move[state]:
                         find = True

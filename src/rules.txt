@@ -4,3 +4,6 @@ hakurei	a(c|b)*dd*ee*
 kirisame	mm*a*(s|t)*err*
 yakumo	(ke|kaii*)*11*
 kero	(kero|kaeru)(kero|kaeru)*
+test0	x|y
+test1	z(x|y)
+test2	zz(x|y)
